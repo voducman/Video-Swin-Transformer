@@ -38,10 +38,7 @@ class Compose:
         """
 
         for t in self.transforms:
-            try:
-                data = t(data)
-            except:
-                return None
+            data = t(data)
 
             if data is None:
                 return None
