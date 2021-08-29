@@ -455,6 +455,7 @@ class PatchEmbed3D(nn.Module):
 
         return x
 
+
 @BACKBONES.register_module()
 class SwinTransformer3D(nn.Module):
     """ Swin Transformer backbone.
