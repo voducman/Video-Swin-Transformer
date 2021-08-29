@@ -132,3 +132,7 @@ work_dirs/
 # avoid soft links created by MIM
 mmaction/configs/*
 mmaction/tools/*
+apex/*
+check.py
+mmaction2/*
+

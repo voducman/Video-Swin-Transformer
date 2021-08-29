@@ -1,5 +1,7 @@
 import argparse
 import os
+import sys
+sys.path.append(os.getcwd())
 import os.path as osp
 import warnings
 
