@@ -8,6 +8,7 @@ import cv2
 import mmcv
 import numpy as np
 import torch
+import time
 from mmcv import Config, DictAction
 from mmcv.parallel import collate, scatter
 
@@ -23,6 +24,9 @@ EXCLUED_STEPS = [
     'OpenCVInit', 'OpenCVDecode', 'DecordInit', 'DecordDecode', 'PyAVInit',
     'PyAVDecode', 'RawFrameDecode', 'FrameSelector'
 ]
+
+run_model_count = 1e-6
+run_model_time = 1e-6
 
 
 def parse_args():
@@ -196,6 +200,8 @@ def show_results(model, data, label, args):
 
 
 def inference(model, data, args, frame_queue):
+    global run_model_count, run_model_time
+
     if len(frame_queue) != args.sample_length:
         # Do no inference when there is no enough frames
         return False, None
@@ -210,8 +216,12 @@ def inference(model, data, args, frame_queue):
     cur_data = collate([cur_data], samples_per_gpu=1)
     if next(model.parameters()).is_cuda:
         cur_data = scatter(cur_data, [args.device])[0]
+
+    start_t = time.time()
     with torch.no_grad():
+        run_model_count += 1
         scores = model(return_loss=False, **cur_data)[0]
+        run_model_time += time.time() - start_t
 
     if args.stride > 0:
         pred_stride = int(args.sample_length * args.stride)
@@ -225,6 +235,8 @@ def inference(model, data, args, frame_queue):
 
 
 def main():
+    global run_model_count, run_model_time
+
     args = parse_args()
 
     args.device = torch.device(args.device)
@@ -257,7 +269,13 @@ def main():
     args.sample_length = sample_length
     args.test_pipeline = test_pipeline
 
+    start_time = time.time()
     show_results(model, data, label, args)
+    end_time = time.time() - start_time
+    print("Time/prediction: {}".format(round((end_time-start_time)/run_model_count, 4)))
+    print("Run model time only:", round(run_model_time, 2))
+    print("Run_model/total_time:", round(run_model_time/(end_time-start_time)*100, 2))
+    print("Run time total:", round(end_time-start_time, 2))
 
 
 if __name__ == '__main__':
