@@ -271,7 +271,7 @@ def main():
 
     start_time = time.time()
     show_results(model, data, label, args)
-    end_time = time.time() - start_time
+    end_time = time.time()
     print("Time/prediction: {}".format(round((end_time-start_time)/run_model_count, 4)))
     print("Run model time only:", round(run_model_time, 2))
     print("Run_model/total_time:", round(run_model_time/(end_time-start_time)*100, 2))
